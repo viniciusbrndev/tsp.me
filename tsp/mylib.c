@@ -12,6 +12,8 @@ struct cidade{
 };
 struct solucao{
     int *passos;
+    int n;
+    double custo;
 };
 
 int tam(FILE* arq){
@@ -38,7 +40,7 @@ bool leCidades(Cidade *v, FILE *arq){
         return false;
     char linha[200];
     fgets(linha, sizeof(char)*200, arq);
-    while(strcmp(linha, "NODE_COORD_SECTION"))
+    while(strcmp(linha, "NODE_COORD_SECTION\n"))
         fgets(linha, sizeof(char)*200, arq);
     double x, y;
     int id;
@@ -77,4 +79,48 @@ double** criaMatrizDistancia(Cidade *v, int n){
         }
     }
     return matriz;
+}
+//implementando método do vizinho mais próximo com a cidade inicial fixa;
+int vizinhoMaisProximo(int atual, bool *visitado,double **dist, int n){
+    int melhorCidade = -1;
+    double menorDist = INFINITY;
+
+    for(int i = 0; i < n; i++){
+        // ignora cidades já visitadas
+        if(visitado[i])
+            continue;
+        // encontrou uma cidade mais próxima?
+        if(dist[atual][i] < menorDist){
+            menorDist = dist[atual][i];
+            melhorCidade = i;
+        }
+    }
+
+    return melhorCidade;
+}
+
+bool geraSolucao(Solucao *solucao,double **dist,int ini, int n){
+    if(!solucao || !*dist|| n <= 0)
+        return false;
+    solucao->passos = malloc(sizeof(int)*n);
+    bool *visitado = malloc(sizeof(bool)*n);
+
+    for(int a = 0; a < n; a++)
+        visitado[a] = false;
+    
+    solucao->passos[0] = 0;
+    visitado[0] = true;
+    
+    int atual = ini;//ini = 0
+    int prox;
+    for(int i = 1; i < n; i++){
+        prox = vizinhoMaisProximo(atual, visitado, dist, n);
+        
+        solucao->passos[i] = prox;
+        visitado[prox] = true;
+        
+        atual = prox;
+    }
+    free(visitado);
+    return true;
 }
