@@ -27,8 +27,10 @@ int main(int argc,char *argv[]){
     double **dist = criaMatrizDistancia(cidades, t);
     test = geraSolucao(solucoes, dist, 0, t);
 
-    printf("%lf", calculaCusto(solucoes, dist));
+    printf("%lf\n", calculaCusto(solucoes, dist));
 
     cidades = destroiCidades(cidades);
     solucoes = destroiSolucao(solucoes, 1);
+    destroiMatriz(dist, t);
+    fclose(arq);
 }

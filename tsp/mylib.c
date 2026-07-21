@@ -16,16 +16,20 @@ struct solucao{
     double custo;
 };
 
-int tam(FILE* arq){
+int tam(FILE *arq){
     if(!arq)
         return -1;
-    int i = 0, tam = -1;
+
     char linha[200];
-    while (i < 4){
-        fgets(linha, sizeof(char)*200, arq);
+    int tam = -1;
+
+    while(fgets(linha, sizeof(linha), arq)){
+        // lendo tamanho do problema
+        if(sscanf(linha, "DIMENSION : %d", &tam) == 1)
+            return tam;
     }
-    sscanf(linha, "%d", &tam);
-    return tam;
+
+    return -1;
 }
 Solucao* alocaSolucao(){
     Solucao* sol = malloc(sizeof(Solucao));
@@ -44,18 +48,33 @@ bool alocaCidades(Cidade** v, int tam){
 bool leCidades(Cidade *v, FILE *arq){
     if(!v || !arq)
         return false;
+
     char linha[200];
-    fgets(linha, sizeof(char)*200, arq);
-    while(strcmp(linha, "NODE_COORD_SECTION\n"))
-        fgets(linha, sizeof(char)*200, arq);
-    double x, y;
-    int id;
-    while(fgets(linha, sizeof(char)*200, arq) != NULL){
-        sscanf(linha, "%d %lf %lf", &id, &x, &y);
-        v[id-1].id = id;
-        v[id-1].x = x;
-        v[id-1].y = y;
+
+    rewind(arq);//volta  pro começo do arq
+    //pula o cabeçalho
+    while(fgets(linha,sizeof(linha),arq)){
+        if(strcmp(linha,"NODE_COORD_SECTION\n") == 0)
+            break;
     }
+
+    int id;
+    double x,y;
+
+    while(fgets(linha,sizeof(linha),arq)){
+
+        if(strncmp(linha,"EOF",3) == 0)//evita linha EOF
+            break;
+
+        if(sscanf(linha,"%d %lf %lf",&id,&x,&y) == 3){
+
+            v[id-1].id = id;
+            v[id-1].x = x;
+            v[id-1].y = y;
+
+        }
+    }
+
     return true;
 }
 double calculaDist(Cidade a,Cidade b){
@@ -63,7 +82,7 @@ double calculaDist(Cidade a,Cidade b){
         return 0;
     double idx1 = a.x - b.x;
     double idx2 = a.y - b.y;
-    return sqrt((pow(idx1, 2) + pow(idx2, 2)));
+    return sqrt(idx1*idx1 + idx2*idx2);
 } 
 double** criaMatrizDistancia(Cidade *v, int n){
     int i = 0, j =0;
@@ -109,13 +128,15 @@ bool geraSolucao(Solucao *solucao,double **dist,int ini, int n){
     if(!solucao || !*dist|| n <= 0)
         return false;
     solucao->passos = malloc(sizeof(int)*n);
+    solucao->n = n;
     bool *visitado = malloc(sizeof(bool)*n);
+
 
     for(int a = 0; a < n; a++)
         visitado[a] = false;
     
-    solucao->passos[0] = 0;
-    visitado[0] = true;
+    solucao->passos[0] = ini;
+    visitado[ini] = true;
     
     int atual = ini;//ini = 0
     int prox;
@@ -130,13 +151,13 @@ bool geraSolucao(Solucao *solucao,double **dist,int ini, int n){
     free(visitado);
     return true;
 }
-double calculaCusto(Solucao *v, double** dist){
+double calculaCusto(Solucao *v, double **dist){
     v->custo = 0;
-    int i;
-    for(i = 0; i < v->n; i++){
+    for(int i = 0; i < v->n - 1; i++){
         v->custo += dist[v->passos[i]][v->passos[i+1]];
     }
-    v->custo += dist[0][v->passos[i]];
+    v->custo += dist[v->passos[v->n-1]][v->passos[0]];
+    
     return v->custo;
 }
 Cidade* destroiCidades(Cidade *c){
@@ -153,4 +174,11 @@ Solucao* destroiSolucao(Solucao *v, int n){
     }
     free(v);
     return NULL;
+}
+void destroiMatriz(double** m, int n){
+    if(!m)
+        return;
+    for(int i = 0; i < n; i++)
+        free(m[i]);
+    free(m);
 }

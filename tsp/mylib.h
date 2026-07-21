@@ -24,4 +24,5 @@ bool geraSolucao(Solucao *solucao,double **dist,int ini, int n);
 
 Cidade* destroiCidades(Cidade *c);
 Solucao* destroiSolucao(Solucao *v, int n);
+void destroiMatriz(double** m, int n);
 #endif
