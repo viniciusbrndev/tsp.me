@@ -14,6 +14,21 @@ int main(int argc,char *argv[]){
         printf("Arquivo não pode ser aberto!");
         return 1;
     }
-    
-    
+    int t = tam(arq);
+    Cidade *cidades;
+    bool test = alocaCidades(&cidades, t);
+    Solucao *solucoes = alocaSolucao();
+
+    if(!test)
+        return -1;
+    test = leCidades(cidades, arq);
+    if(!test)
+        return -1;
+    double **dist = criaMatrizDistancia(cidades, t);
+    test = geraSolucao(solucoes, dist, 0, t);
+
+    printf("%lf", calculaCusto(solucoes, dist));
+
+    cidades = destroiCidades(cidades);
+    solucoes = destroiSolucao(solucoes, 1);
 }

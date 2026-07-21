@@ -27,6 +27,12 @@ int tam(FILE* arq){
     sscanf(linha, "%d", &tam);
     return tam;
 }
+Solucao* alocaSolucao(){
+    Solucao* sol = malloc(sizeof(Solucao));
+    if(!sol)
+        sol = NULL;
+    return sol;
+}
 bool alocaCidades(Cidade** v, int tam){
     if(!v)
         return false;
@@ -123,4 +129,28 @@ bool geraSolucao(Solucao *solucao,double **dist,int ini, int n){
     }
     free(visitado);
     return true;
+}
+double calculaCusto(Solucao *v, double** dist){
+    v->custo = 0;
+    int i;
+    for(i = 0; i < v->n; i++){
+        v->custo += dist[v->passos[i]][v->passos[i+1]];
+    }
+    v->custo += dist[0][v->passos[i]];
+    return v->custo;
+}
+Cidade* destroiCidades(Cidade *c){
+    if(!c)
+        return NULL;
+    free(c);
+    return NULL;
+}
+Solucao* destroiSolucao(Solucao *v, int n){
+    if(!v)
+        return NULL;
+    for(int i = 0; i < n; i++){
+        free(v[i].passos);
+    }
+    free(v);
+    return NULL;
 }
