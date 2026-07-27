@@ -17,7 +17,9 @@ int main(int argc,char *argv[]){
     int t = tam(arq);
     Cidade *cidades;
     bool test = alocaCidades(&cidades, t);
-    Solucao *solucoes = alocaSolucao();
+    Solucao **solucoes = malloc(sizeof(Solucao*)*t);
+    for(int a = 0; a < t; a++)
+        solucoes[a] = alocaSolucao();
 
     if(!test)
         return -1;
@@ -25,12 +27,16 @@ int main(int argc,char *argv[]){
     if(!test)
         return -1;
     double **dist = criaMatrizDistancia(cidades, t);
-    test = geraSolucao(solucoes, dist, 0, t);
+    for(int k = 0; k < t; k++){
+        test = geraSolucao(solucoes[k], dist, k, t);
 
-    printf("%lf\n", calculaCusto(solucoes, dist));
-
+        printf("%lf\n", calculaCusto(solucoes[k], dist));
+    }
+    //liberando memoria
     cidades = destroiCidades(cidades);
-    solucoes = destroiSolucao(solucoes, 1);
+    for(int a = 0; a < t; a++)
+        solucoes[a] = destroiSolucao(solucoes[a], t);
+    free(solucoes);
     destroiMatriz(dist, t);
     fclose(arq);
 }
